@@ -4,7 +4,7 @@ defmodule ExUnit.Receiver do
   """
 
   defmacro __using__(opts) do
-    {name, []} = Keyword.pop(opts, :name, :receiver)
+    {name, _} = Keyword.pop(opts, :as, :receiver)
     module_name =
       __CALLER__.module
       |> Module.split()
