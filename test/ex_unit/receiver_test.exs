@@ -1,12 +1,37 @@
+defmodule ExUnit.Receiver.TestRunner do
+  defmacro run_tests do
+    alias ExUnit.ReceiverTest.Example
+
+    quote do
+      test "can get the state of the registry" do
+        assert get_receiver() == 0
+      end
+
+      test "can update the state of the registry" do
+        assert increment(1)
+        assert get_receiver() == 1
+      end
+
+      test "side effects can be tested with an anonymous function" do
+        assert get_receiver() == 0
+        assert Example.cause_side_effects(:normal, fn x -> increment(x) end, [1]) == :normal
+        assert get_receiver() == 1
+      end
+
+      test "side effects can be tested with a named function" do
+        assert get_receiver() == 0
+        assert Example.cause_side_effects(:normal, __MODULE__, :increment, [1]) == :normal
+        assert get_receiver() == 1
+      end
+    end
+  end
+end
+
 defmodule ExUnit.ReceiverTest do
   use ExUnit.Case
   use ExUnit.Receiver
+  import ExUnit.Receiver.TestRunner
   doctest ExUnit.Receiver
-
-  setup do
-    start_receiver(0)
-    :ok
-  end
 
   defmodule Example do
     def cause_side_effects(status, fun, args) do
@@ -24,28 +49,30 @@ defmodule ExUnit.ReceiverTest do
     update_receiver(&(&1 + num))
   end
 
-  describe "Registry" do
-    test "can get the state of the registry" do
-      assert get_receiver() == 0
+  describe "initializes with a value" do
+    setup do
+      start_receiver(0)
+      :ok
     end
 
-    test "can update the state of the registry" do
-      assert increment(1)
-      assert get_receiver() == 1
-    end
+    run_tests()
   end
 
-  describe "Example module" do
-    test "side effects can be tested with an anonymous function" do
-      assert get_receiver() == 0
-      assert Example.cause_side_effects(:normal, fn x -> increment(x) end, [1]) == :normal
-      assert get_receiver() == 1
+  describe "initializes with a function" do
+    setup do
+      start_receiver(fn -> 0 end)
+      :ok
     end
 
-    test "side effects can be tested with a named function" do
-      assert get_receiver() == 0
-      assert Example.cause_side_effects(:normal, __MODULE__, :increment, [1]) == :normal
-      assert get_receiver() == 1
+    run_tests()
+  end
+
+  describe "initializes with a module, function, and arguments" do
+    setup do
+      start_receiver(Kernel, :-, [1, 1])
+      :ok
     end
+
+    run_tests()
   end
 end
