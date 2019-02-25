@@ -13,6 +13,11 @@ defmodule ExUnit.ReceiverTest do
       apply(fun, args)
       status
     end
+
+    def cause_side_effects(status, module, fun, args) do
+      apply(module, fun, args)
+      status
+    end
   end
 
   def increment(num) do
@@ -31,9 +36,15 @@ defmodule ExUnit.ReceiverTest do
   end
 
   describe "Example module" do
-    test "side effects can be tested" do
+    test "side effects can be tested with an anonymous function" do
       assert get_receiver() == 0
       assert Example.cause_side_effects(:normal, fn x -> increment(x) end, [1]) == :normal
+      assert get_receiver() == 1
+    end
+
+    test "side effects can be tested with a named function" do
+      assert get_receiver() == 0
+      assert Example.cause_side_effects(:normal, __MODULE__, :increment, [1]) == :normal
       assert get_receiver() == 1
     end
   end
