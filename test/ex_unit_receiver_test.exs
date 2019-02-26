@@ -1,6 +1,6 @@
-defmodule ExUnit.Receiver.TestRunner do
+defmodule ExUnitReceiverTest.Runner do
   defmacro run_tests do
-    alias ExUnit.ReceiverTest.Example
+    alias ExUnit.ExUnitReceiverTest.Example
 
     quote do
       test "can get the state of the registry" do
@@ -27,11 +27,11 @@ defmodule ExUnit.Receiver.TestRunner do
   end
 end
 
-defmodule ExUnit.ReceiverTest do
+defmodule ExUnit.ExUnitReceiverTest do
   use ExUnit.Case
-  use ExUnit.Receiver
-  import ExUnit.Receiver.TestRunner
-  doctest ExUnit.Receiver
+  use ExUnitReceiver
+  import ExUnitReceiverTest.Runner
+  doctest ExUnitReceiver
 
   defmodule Example do
     def cause_side_effects(status, fun, args) do
@@ -74,5 +74,16 @@ defmodule ExUnit.ReceiverTest do
     end
 
     run_tests()
+  end
+
+  describe "start_receiver/1 starts process under test supervisor" do
+    setup do
+      start_receiver([])
+      :ok
+    end
+
+    test "receiver is not started under the Receiver.Supervisor" do
+      assert Supervisor.which_children(Receiver.Supervisor) == []
+    end
   end
 end

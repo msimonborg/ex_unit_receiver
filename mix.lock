@@ -1,0 +1,3 @@
+%{
+  "receiver": {:git, "https://github.com/msimonborg/receiver.git", "dc09d3554f20dff460195289a3af6b3d5a9e7c37", []},
+}
